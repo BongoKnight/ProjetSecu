@@ -20,25 +20,26 @@ Le serveur vérifie que les autorisations sont les bonnes et renvoit un message 
 ## Protocole
 
  
-> Badgeuse -> Serveur : {IdBageuse, IdEmploye}_PKs
-> Serveur -> Badgeuse : { Msg }_PKb
-> Badgeuse -> Serveur: { Msg }_PKs
+> Badgeuse -> Serveur : {IdBageuse, IdEmploye}_PKs <br>
+> Serveur -> Badgeuse : { Msg }_PKb <br>
+> Badgeuse -> Serveur: { Msg }_PKs 
  
 ## Limitation
 Ce protocole est sensible au rejeu. On peut rejouer le premier message de demande d'accès au serveur, mais aussi envoyé directement le message { Msg }_PKb à la badgeuse.
 
-# Deuxième version : clef de session
+# Deuxième version : Nonces
  
 ## Connaissances initiales
  
-Les connaissances initiales sont les mêmes, des nonces sont ajoutés afin d'éviter que le deuxième message soit rejoué.
+Les connaissances initiales sont les mêmes, des nonces sont ajoutés afin d'éviter que le deuxième message soit rejoué. Des secrets sur les nonces sont prévus pour permettre une authentification entre serveur et intrus.
 
 ## Protocole
 
+> Badgeuse -> Serveur : {IdBageuse, IdEmploye, Nb}_PKs <br>
+>Serveur -> Badgeuse : { Msg , Nb.Ns}_PKb <br>
+>Badgeuse -> Serveur: { Msg , Ns }_PKs
 
-> Badgeuse -> Serveur : {IdBageuse, IdEmploye, Na}_PKs
->Serveur -> Badgeuse : { Msg , Na.Nb}_PKb
->Badgeuse -> Serveur: { Msg , Nb }_PKs
+
 
 
  
