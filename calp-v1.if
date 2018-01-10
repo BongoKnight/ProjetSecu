@@ -1,0 +1,76 @@
+%% IF specification of calp-v1.hlpsl
+
+section signature:
+
+state_serveur: agent * agent * protocol_id * protocol_id * public_key * public_key * nat * nat -> fact
+state_badgeuse: agent * agent * protocol_id * protocol_id * public_key * public_key * nat * set(agent) * nat -> fact
+
+
+section types:
+
+pks, pkb, pki, PKb, PKs: public_key
+idbadgeuse, IdEmploye, IdBadgeuse, idemploye: protocol_id
+State, ok, 2, 1, 0, 7, 4, SID, Dummy_State, 3: nat
+set_59, set_52: set
+b, s, B, S, i: agent
+Set_18, Dummy_Set_18, ASGoal: set(agent)
+start, MGoal: message
+
+
+section inits:
+
+initial_state init1 := 
+ iknows(start).
+ iknows(b).
+ iknows(s).
+ iknows(pkb).
+ iknows(pks).
+ iknows(pki).
+ iknows(inv(pki)).
+ iknows(i).
+ state_badgeuse(b,s,idemploye,idbadgeuse,pkb,pks,0,set_52,3).
+ state_serveur(s,b,idemploye,idbadgeuse,pkb,pks,0,4).
+ state_serveur(s,i,idemploye,idbadgeuse,pki,pks,0,7)
+
+
+section rules:
+
+step step_0 (B,S,IdEmploye,IdBadgeuse,PKb,PKs,Dummy_Set_18,SID) :=
+ state_badgeuse(B,S,IdEmploye,IdBadgeuse,PKb,PKs,0,Dummy_Set_18,SID).
+ iknows(start)
+ =>
+ state_badgeuse(B,S,IdEmploye,IdBadgeuse,PKb,PKs,1,Dummy_Set_18,SID).
+ iknows(crypt(PKs,pair(IdEmploye,IdBadgeuse))).
+ secret(IdEmploye,idemploye,Dummy_Set_18).
+ contains(B,Dummy_Set_18).
+ contains(S,Dummy_Set_18)
+
+step step_1 (B,S,IdEmploye,IdBadgeuse,PKb,PKs,Set_18,SID) :=
+ state_badgeuse(B,S,IdEmploye,IdBadgeuse,PKb,PKs,1,Set_18,SID).
+ iknows(crypt(PKb,ok))
+ =>
+ state_badgeuse(B,S,IdEmploye,IdBadgeuse,PKb,PKs,2,Set_18,SID).
+ iknows(crypt(PKs,ok))
+
+step step_2 (S,B,IdEmploye,IdBadgeuse,PKb,PKs,SID) :=
+ state_serveur(S,B,IdEmploye,IdBadgeuse,PKb,PKs,0,SID).
+ iknows(crypt(PKs,pair(IdEmploye,IdBadgeuse)))
+ =>
+ state_serveur(S,B,IdEmploye,IdBadgeuse,PKb,PKs,1,SID).
+ iknows(crypt(PKb,ok))
+
+
+section properties:
+
+property secrecy_of_idemploye (MGoal,ASGoal) :=
+ [] ((secret(MGoal,idemploye,ASGoal) /\ iknows(MGoal))
+     => contains(i,ASGoal))
+
+
+section attack_states:
+
+attack_state secrecy_of_idemploye (MGoal,ASGoal) :=
+ iknows(MGoal).
+ secret(MGoal,idemploye,ASGoal) &
+ not(contains(i,ASGoal))
+
