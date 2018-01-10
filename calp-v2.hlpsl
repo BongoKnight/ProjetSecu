@@ -2,64 +2,77 @@
 %% PURPOSE: Un serveur(S), un lecteur de badge (LB)
 %% Deux cas de figures :  - une demande d'accès normal (1)
 %%			  - une demande d'accès exceptionnel (2)
-%% LB_S:
-%% 1. LB  - {Na.A}_PKb ----> B
-%% 2. A <- {Na.Nb}_PKa ---  B
-%% 3. A  - {Nb}_PKb ------> B
+%% B_S:
+%% Badgeuse -> Serveur : {IdBageuse, IdEmploye, Nb}_PKs
+%%Serveur -> Badgeuse : { Msg , Nb.Ns}_PKb
+%%Badgeuse -> Serveur: { Msg , Ns }_PKs
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% définition du rôle lecteur de badge, initiant le protocole
-role lecteur_badge (LB, S: agent,             
-            PKlb, PKs: public_key,      
+%% définition du rôle badgeuse, initiant le protocole
+role badgeuse (B, S: agent,
+	    IdEmploye, IdBadgeuse : protocol_id,             
+            PKb, PKs: public_key,      
             SND, RCV: channel(dy)) 
-played_by LB def=
 
-  local State: nat, 
-        Na, Nb: text
+played_by B def=
 
+  local State: nat,
+	Nb, Ns: text
   init State:=0
   
   transition  
    
     0.  State=0 /\ RCV(start) =|> 
-	State':=1 /\ Na':=new() /\ SND({Na'.A}_PKb) /\ secret(Na',na,{A,B}) /\ witness(A,B, alice_bob_na,Na')
- 
-    2.  State=1 /\ RCV({Na.Nb'.B}_PKa) =|> 
-	State':=2 /\ SND({Nb'}_PKb) /\ request(A,B,alice_bob_nb,Nb') 
+	State':=1 /\ Nb':=new() /\ SND({IdEmploye.IdBadgeuse.Nb'}_PKs) /\ secret(IdEmploye,idemploye,{B,S}) /\ secret(Nb',nb,{B,S}) /\ witness(B,S,badgeuse_serveur,Nb')
+    2.  State=1 /\ RCV({ok.Nb.Ns'}_PKb) =|> 
+	State':=2 /\ SND({ok.Ns'}_PKs) /\ request(B,S,serveur_badgeuse,Ns')
 
 end role
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% role serveur
-role bob (LB, S: agent,
-            PKlb, PKs: public_key,
+role serveur (B, S: agent,
+            IdEmploye, IdBadgeuse : protocol_id,
+	    PKb,PKs: public_key,
 	    SND,RCV: channel(dy))
-played_by B def=
+played_by S def=
 
   local State: nat,
-	Na, Nb: text
+	Nb, Ns: text
 
   init State:=0
 
   transition
     
-    0.  State=0 /\ RCV({Na'.A}_PKb) =|>
-State':=1 /\ Nb':=new() /\ SND({Na'.Nb'.B}_PKa) /\ secret(Nb',nb,{A,B}) /\ witness (B,A,alice_bob_nb,Nb') 
-
-    2.  State=1 /\ RCV({Nb}_PKb) =|> 
-	State':=2 /\request(B,A,alice_bob_na,Na)
-
+    1.  State=0 /\ RCV({IdEmploye.IdBadgeuse.Nb'}_PKs) =|>
+        State':=1 /\ Ns':=new() /\ SND({ok.Nb'.Ns'}_PKb) /\ secret(Ns',ns,{S,B})/\ witness(S,B,serveur_badgeuse,Ns')
 end role
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% role serveur
+role serveur (B, S: agent,
+            IdEmploye, IdBadgeuse : protocol_id,
+	    PKb,PKs: public_key,
+	    SND,RCV: channel(dy))
+played_by S def=
 
+  local State: nat
+
+  init State:=0
+
+  transition
+    
+    1.  State=0 /\ RCV({IdEmploye.IdBadgeuse}_PKs) =|>
+        State':=1 /\ SND({ok}_PKb)
+end role
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% définition du rôle caractérisant une session
-role session(A, B: agent, PKa, PKb: public_key) def=
+role session(B, S: agent, PKs, PKb: public_key, IdEmploye,IdBadgeuse : protocol_id) def=
 
-  local SA, RA, SB, RB: channel(dy)
+  local SB, RB, SS, RS: channel(dy)
 
   composition 
 
-	alice(A,B,PKa,PKb,SA,RA)
-     /\ bob(A,B,PKa,PKb,SB,RB)
+	badgeuse(B,S,IdEmploye,IdBadgeuse,PKs,PKb,SB,RB)
+     /\ serveur(B,S,IdEmploye,IdBadgeuse,PKs,PKb,SS,RS)
 
 end role
 
@@ -67,20 +80,17 @@ end role
 %% définition du rôle caractérisant le scenario à exécuter
 role environment() def=
 
-    const a, b: agent,
-	  pka, pkb, pki: public_key,
-          nb: protocol_id,
-	  na: protocol_id,
-	  alice_bob_nb: protocol_id,
-	  alice_bob_na: protocol_id
-    intruder_knowledge = {a, b, pka, pkb, pki, inv(pki)}
+    const b,s : agent,
+	  pks, pkb, pki: public_key,
+          idemploye, idbadgeuse, nb, ns, badgeuse_serveur, serveur_badgeuse: protocol_id,
+	  ok : nat
+    intruder_knowledge = {b, s, pkb, pks, pki, inv(pki)}
 
     composition
 
-	session(a,b,pka,pkb)/\
-	session(b,a,pkb,pka)/\
-	session(i,b, pki,pkb)/\
-	session(a,i,pka,pki)
+	session(b,s,pkb,pks,idemploye, idbadgeuse)/\
+%%	session(b,i,pkb,pki,idemploye, idbadgeuse)
+	session(i,s, pki,pks,idemploye, idbadgeuse)
 
 
 
@@ -89,10 +99,10 @@ end role
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% pour l'instant, pas de section goal ici (donc pas de propriété à vérifier)
 goal
-    secrecy_of nb
-    secrecy_of na
-    authentication_on alice_bob_nb
-    authentication_on alice_bob_na
+	secrecy_of nb,ns	
+	secrecy_of idemploye
+	authentication_on badgeuse_serveur
+	authentication_on serveur_badgeuse
 end goal
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% lancement du rôle principal
