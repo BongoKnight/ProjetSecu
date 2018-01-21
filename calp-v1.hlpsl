@@ -71,8 +71,8 @@ role environment() def=
     composition
 
 	session(b,s,pkb,pks,idemploye, idbadgeuse)/\
-%%	session(b,i,pkb,pki,idemploye, idbadgeuse)
-	session(i,s, pki,pks,idemploye, idbadgeuse)
+	session(b,i,pkb,pki,idemploye, idbadgeuse)
+%%	session(i,s, pki,pks,idemploye, idbadgeuse)
 
 
 
