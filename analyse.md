@@ -1,7 +1,8 @@
-Analyse des versions
+# Analyse des versions
 
 
-Version 1 du protocole :
+## Version 1 du protocole :
+### Résultat cl-atse
 ```apache
 session engagée : 	session(b,s,pkb,pks,idemploye, idbadgeuse) /\ session(b,i,pkb,pki,idemploye, idbadgeuse)
 ```
@@ -40,8 +41,10 @@ ATTACK TRACE
 
 
 ```
-
-Analyse v2
+### Explications
+L'intrus initie la connexion et récupère l'id de l'employé et l'id de la badgeuse.
+## Analyse v2
+### Résultat de cl-atse
 ```apache
 SUMMARY
   UNSAFE
@@ -78,3 +81,5 @@ ATTACK TRACE
               & Built from step_2
 
 ```
+### Explications
+L'intrus initie la demande, la badgeuse lui envoie le bon message qu'il transmet au serveur, le serveur renvoit alors un message à l'intrus chiffré avec la clef de l'intrus qui peut alors voir le nonce.

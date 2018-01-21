@@ -36,11 +36,21 @@ Les connaissances initiales sont les mêmes, des nonces sont ajoutés afin d'év
 ## Protocole
 
 > Badgeuse -> Serveur : {IdBageuse, IdEmploye, Nb}_PKs <br>
->Serveur -> Badgeuse : { Msg , Nb.Ns}_PKb <br>
->Badgeuse -> Serveur: { Msg , Ns }_PKs
+> Serveur -> Badgeuse : { Msg , Nb.Ns}_PKb <br>
+> Badgeuse -> Serveur: { Msg , Ns }_PKs
 
+## Limitation
+Une attaque de type MitM est possible, l'intrus peut récupérer le Nonce. Et ainsi modifier le message renvoyé par le serveur et par exemple, forcer la porte à restre fermée.
 
+# Troisième version : Clef de session
+## Connaissances initiales
+Les connaissances initiales restent identiques, cependant pour éviter le rejeu et l'attaque de type MitM on va mettre en place une clef de session.
 
+## Protocole
+> Badgeuse -> Serveur : {IdBageuse, IdEmploye}_PKs <br>
+> Serveur -> Badgeuse : { ClefSession}_PKb <br>
+> Badgeuse -> Serveur: { Msg }_ClefSession <br>
+> Serveur -> Badgeuse: { ok .H(Msg)}_ClefSession
 
  
 
