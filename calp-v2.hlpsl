@@ -46,23 +46,7 @@ played_by S def=
     1.  State=0 /\ RCV({IdEmploye.IdBadgeuse.Nb'}_PKs) =|>
         State':=1 /\ Ns':=new() /\ SND({ok.Ns'.Nb'}_PKb) /\ secret(Ns',ns,{S,B})/\ witness(S,B,serveur_badgeuse,Ns')
 end role
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% role serveur
-role serveur (B, S: agent,
-            IdEmploye, IdBadgeuse : protocol_id,
-	    PKb,PKs: public_key,
-	    SND,RCV: channel(dy))
-played_by S def=
 
-  local State: nat
-
-  init State:=0
-
-  transition
-    
-    1.  State=0 /\ RCV({IdEmploye.IdBadgeuse}_PKs) =|>
-        State':=1 /\ SND({ok}_PKb)
-end role
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% définition du rôle caractérisant une session
 role session(B, S: agent, PKs, PKb: public_key, IdEmploye,IdBadgeuse : protocol_id) def=
@@ -71,8 +55,8 @@ role session(B, S: agent, PKs, PKb: public_key, IdEmploye,IdBadgeuse : protocol_
 
   composition 
 
-	badgeuse(B,S,IdEmploye,IdBadgeuse,PKs,PKb,SB,RB)
-     /\ serveur(B,S,IdEmploye,IdBadgeuse,PKs,PKb,SS,RS)
+	badgeuse(B,S,IdEmploye,IdBadgeuse,PKb,PKs,SB,RB)
+     /\ serveur(B,S,IdEmploye,IdBadgeuse,PKb,PKs,SS,RS)
 
 end role
 
@@ -88,9 +72,9 @@ role environment() def=
 
     composition
 
-	session(b,s,pkb,pks,idemploye, idbadgeuse)/\
-%%	session(b,i,pkb,pki,idemploye, idbadgeuse)
-	session(i,s, pki,pks,idemploye, idbadgeuse)
+	session(b,s,pks,pkb,idemploye, idbadgeuse)/\
+%%	session(b,i,pki,pkb,idemploye, idbadgeuse)
+	session(i,s, pks,pki,idemploye, idbadgeuse)
 
 
 
