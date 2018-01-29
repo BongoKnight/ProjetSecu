@@ -1,0 +1,172 @@
+<!DOCTYPE HTML>
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>
+   Made with Remarkable!
+  </title>
+  <link href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/styles/github.min.css" rel="stylesheet"/>
+  <style type="text/css">
+   ::selection,a::selection{background:rgba(255,255,0,.3)}a,a::selection{color:#0645ad}hr,img{border:0}a,ins{text-decoration:none}::selection,ins,mark{color:#000}dfn,mark{font-style:italic}hr,ol,p,ul{margin:1em 0}table tr td,table tr th{border:1px solid #ccc;text-align:left;padding:6px 13px;margin:0}hr,pre code,table,table tr{padding:0}pre,pre code{white-space:pre}html{font-size:100%;overflow-y:scroll;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%}body{color:#444;font-family:Georgia,Palatino,"Palatino Linotype",Times,"Times New Roman",serif;font-size:12px;line-height:1.5em;padding:1em;margin:auto;max-width:42em;background:#fefefe}a:visited{color:#0b0080}a:hover{color:#06e}a:active{color:#faa700}a:focus{outline:dotted thin}a:active,a:hover{outline:0}::-moz-selection{background:rgba(255,255,0,.3);color:#000}a::-moz-selection{background:rgba(255,255,0,.3);color:#0645ad}img{max-width:100%;-ms-interpolation-mode:bicubic;vertical-align:middle}h1,h2,h3,h4,h5,h6{font-weight:400;color:#111;line-height:1em}b,h4,h5,h6,mark,strong,table tr th{font-weight:700}h1{font-size:2.5em}h2{font-size:2em}h3{font-size:1.5em}h4{font-size:1.2em}h5{font-size:1em}h6{font-size:.9em}blockquote{color:#666;margin:0;padding-left:3em;border-left:.5em #EEE solid}hr{display:block;height:2px;border-top:1px solid #aaa;border-bottom:1px solid #eee}code,kbd,pre,samp{color:#000;font-family:monospace,monospace;font-size:.98em}pre{white-space:pre-wrap;word-wrap:break-word}ins{background:#ff9}mark{background:#ff0}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sup{top:-.5em}sub{bottom:-.25em}ol,ul{padding:0 0 0 2em}li p:last-child{margin:0}dd{margin:0 0 0 2em}table{border-collapse:collapse;border-spacing:0}td{vertical-align:top}@media only screen and (min-width:480px){body{font-size:14px}}@media only screen and (min-width:768px){body{font-size:16px}}@media print{blockquote,img,pre,tr{page-break-inside:avoid}*{background:0 0!important;color:#000!important;filter:none!important;-ms-filter:none!important}body{font-size:12pt;max-width:100%}a,a:visited{text-decoration:underline}hr{height:1px;border:0;border-bottom:1px solid #000}a[href]:after{content:" (" attr(href) ")"}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}blockquote,pre{border:1px solid #999;padding-right:1em}img{max-width:100%!important}@page :left{margin:15mm 20mm 15mm 10mm}@page :right{margin:15mm 10mm 15mm 20mm}h2,h3,p{orphans:3;widows:3}h2,h3{page-break-after:avoid}}table tr{border-top:1px solid #ccc;background-color:#fff;margin:0}table tr:nth-child(2n){background-color:#aaa}table tr td :first-child,table tr th :first-child{margin-top:0}table tr td:last-child,table tr th :last-child{margin-bottom:0}code,tt{margin:0 2px;padding:0 5px;white-space:nowrap;border:1px solid #eaeaea;background-color:#f8f8f8;border-radius:3px}pre code{margin:0;border:none;background:0 0}.highlight pre,pre{background-color:#f8f8f8;border:1px solid #ccc;font-size:13px;line-height:19px;overflow:auto;padding:6px 10px;border-radius:3px}
+  </style>
+ </head>
+ <body>
+  <h1 id="controle-dacces-au-loria">
+   Contrôle d’accès au Loria
+  </h1>
+  <h2 id="contextualisation">
+   Contextualisation
+  </h2>
+  <p>
+   Le LORIA contient des zones avec des niveaux de confidentialité différents. Tous les employés sont admis dans les zones de confidentialité basse. Et seules quelques personnes sont admises dans les zones classifiées “Secret”. Il est utile qu’une personne puisse tout de même effectuer une demande d’accès exceptionnelle et que cette demande soit gérée dans les plus brefs délais.
+  </p>
+  <h2 id="architecture">
+   Architecture
+  </h2>
+  <p>
+   Le réseau est organisé comme suit :
+  </p>
+  <ul>
+   <li>
+    Des badgeuses à l’entrée de chaque pièce, qui permettent d’octroyer l’accès à la pièce.
+   </li>
+   <li>
+    Un serveur central qui vérifie que les permissions des employés utilisant la badgeuse sont conformes à ce qui est attendu.
+   </li>
+  </ul>
+  <h2 id="role-du-serveur">
+   Rôle du serveur
+  </h2>
+  <p>
+   Le serveur vérifie que les autorisations sont les bonnes et renvoie un message à la badgeuse indicatif de l’action à effectuer.
+  </p>
+  <h1 id="premiere-version-naive">
+   Première version : naïve
+  </h1>
+  <h2 id="connaissances-initiales">
+   Connaissances initiales
+  </h2>
+  <p>
+   Le serveur connaît les identifiants des employés et des badgeuses et garde en mémoire leur niveau de confidentialité, il connaît de plus sa clef privé et sa clef publique, ainsi que les clefs publiques des badgeuses
+   <br/>
+   La badgeuse connait l’identifiant de l’employé qui vient de badger. Mais aussi son propre identifiant, ses clefs publiques et privées, l’adresse du serveur et sa clef publique.
+  </p>
+  <h2 id="protocole">
+   Protocole
+  </h2>
+  <blockquote>
+   <p>
+    Badgeuse -&gt; Serveur : {IdBageuse, IdEmploye}_PKs
+    <br/>
+    <br/>
+    Serveur -&gt; Badgeuse : { Msg }_PKb
+    <br/>
+    <br/>
+    Badgeuse -&gt; Serveur: { Msg }_PKs
+   </p>
+  </blockquote>
+  <h2 id="limitation">
+   Limitation
+  </h2>
+  <p>
+   Ce protocole est sensible au rejeu. On peut rejouer le premier message de demande d’accès au serveur, mais aussi envoyer directement le message { Msg }_PKb à la badgeuse.
+  </p>
+  <h1 id="deuxieme-version-nonces">
+   Deuxième version : Nonces
+  </h1>
+  <h2 id="connaissances-initiales_1">
+   Connaissances initiales
+  </h2>
+  <p>
+   Les connaissances initiales sont les mêmes, des nonces sont ajoutés afin d’éviter que le deuxième message soit rejoué. Des secrets sur les nonces sont prévus pour empêcher une authentification entre serveur et intrus.
+  </p>
+  <h2 id="protocole_1">
+   Protocole
+  </h2>
+  <blockquote>
+   <p>
+    Badgeuse -&gt; Serveur : {IdBageuse, IdEmploye, Nb}_PKs
+    <br/>
+    <br/>
+    Serveur -&gt; Badgeuse : { Msg , Nb.Ns}_PKb
+    <br/>
+    <br/>
+    Badgeuse -&gt; Serveur: { Msg , Ns }_PKs
+   </p>
+  </blockquote>
+  <h2 id="limitation_1">
+   Limitation
+  </h2>
+  <p>
+   Une attaque de type MitM est possible, l’intrus peut récupérer le Nonce. Et ainsi modifier le message renvoyé par le serveur et par exemple, forcer la porte à rester fermée.
+  </p>
+  <h1 id="troisieme-version-clef-de-session">
+   Troisième version : Clef de session
+  </h1>
+  <h2 id="connaissances-initiales_2">
+   Connaissances initiales
+  </h2>
+  <p>
+   Les connaissances initiales restent identiques, cependant pour éviter le rejeu et l’attaque de type MitM on va mettre en place une clef de session.
+   <br/>
+   On rajoute aussi un TypeAction pour la badgeuse, qui correspond à une demande d’ouverture traditionnelle ou exceptionnelle si d’habitude la personne n’a pas accès à cette zone. Pour le serveur, on rajoute une Action qu’il renvoie à la badgeuse qui autorise ou non l’accès à la zone si l’identifiant de l’employé est autorisé à pénétrer dans la zone.
+  </p>
+  <h2 id="protocole_2">
+   Protocole
+  </h2>
+  <blockquote>
+   <p>
+    Badgeuse -&gt; Serveur : {IdBageuse, IdEmploye}_PKs
+    <br/>
+    <br/>
+    Serveur -&gt; Badgeuse : { ClefSession}_PKb
+    <br/>
+    <br/>
+    Badgeuse -&gt; Serveur: { Msg }_ClefSession
+    <br/>
+    <br/>
+    Serveur -&gt; Badgeuse: { ok .H(Msg)}_ClefSession
+   </p>
+  </blockquote>
+  <h2 id="discussion-sur-la-gestion-dun-acces-exceptionnel">
+   Discussion sur la gestion d’un accès exceptionnel
+  </h2>
+  <p>
+   On peut imaginer deux façons de gérer une demande d’accès exceptionnelle, soit la logique interne du serveur gère la demande soit un message spécial est envoyé par la badgeuse.
+   <br/>
+   La première version semble la plus légitime, une demande est faite en amont et le serveur lorsqu’il reçoit une demande d’accès vérifie que celle-ci est légitime. Mais la demande d’accès reste la même que habituellement.
+   <br/>
+   La seconde version consisterait à ce que la badgeuse modifie son message lorsqu’une demande exceptionnelle est faite. Une action de l’utilisateur est alors requise pour faire cette demande et elle doit être validée sinon des abus pourrait exister.
+   <br/>
+   Pour palier à cette problématique, nous allons considérer que le message envoyé est de type message (typeAction), le contenu est laissé libre, on peut donc imaginer les deux méthodes la première étant a privilégier. On préfère une logique centralisée.
+  </p>
+  <h2 id="mise-en-place-de-securite">
+   Mise en place de sécurité
+  </h2>
+  <p>
+   Afin de rendre le protocole plus sûr, des sécurités sont mises en place avec notamment des informations tenues secrètes comme la clé de session entre la badgeuse et le serveur, l’Id de l’employé et du serveur et l’action transmise.
+   <br/>
+   On vérifie les acquittements entre la badgeuse et le serveur.
+  </p>
+  <h2 id="limites">
+   Limites
+  </h2>
+  <p>
+   Il ya toujours des limites. Ici, nous nous sommes intéressés aux propriétés d’authentification(les IDs), de confidentialité(clé de session + secrecy_of), de non répudiation(propriété de authentication_on). Et a priori, le protocole que l’on a mis en place semble plutôt résistant (
+   <a href="Analyse.pdf">
+    voir analyse.pdf
+   </a>
+   ).
+  </p>
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/highlight.min.js">
+  </script>
+  <script>
+   hljs.initHighlightingOnLoad();
+  </script>
+  <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript">
+  </script>
+  <script type="text/javascript">
+   MathJax.Hub.Config({"showProcessingMessages" : false,"messageStyle" : "none","tex2jax": { inlineMath: [ [ "$", "$" ] ] }});
+  </script>
+ </body>
+</html>

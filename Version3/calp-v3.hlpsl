@@ -1,0 +1,110 @@
+%% PROTOCOL: CALP:Control Access Loria Protocol
+%% PURPOSE: Un serveur(S), un lecteur de badge (LB)
+%% Deux cas de figures :  - une demande d'accès normal (1)
+%%			  - une demande d'accès exceptionnel (2)
+%% B_S:
+%% Badgeuse -> Serveur : {IdBageuse, IdEmploye}_PKs
+%%Serveur -> Badgeuse : { ClefSession}_PKb
+%%Badgeuse -> Serveur: { Msg}_ClefSession
+%%Serveur -> Badgeuse: { ok.H(Msg)}_ClefSession
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% définition du rôle badgeuse, initiant le protocole
+role badgeuse (B, S: agent,
+	    IdEmploye, IdBadgeuse,IdServeur : protocol_id,
+            TypeAction : protocol_id,            
+            PKb, PKs: public_key,
+	    H: hash_func,      
+            SND, RCV: channel(dy)) 
+
+played_by B def=
+
+  local State: nat,
+  Action: text,
+  ClefSession : symmetric_key
+  init State:=0
+  
+  transition  
+   
+    0.  State=0 /\ RCV(start) =|> 
+	State':=1 /\ SND({IdEmploye.IdBadgeuse}_PKs) /\ secret(IdEmploye,idemploye,{B,S}) /\ witness(B,S,badgeuse_serveur,IdEmploye.IdBadgeuse)
+    2.  State=1 /\ RCV({ClefSession'.IdServeur}_PKb) =|> 
+	State':=2 /\ SND({TypeAction}_ClefSession) 
+    3.  State=2 /\ RCV({TypeAction.Action'}_ClefSession) =|>
+        State':=3 /\ SND({ok.H(Action')}_ClefSession) /\ request(B,S,serveur_badgeuse, IdEmploye.IdBadgeuse)
+
+end role
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% role serveur
+role serveur (B, S: agent,
+            IdEmploye, IdBadgeuse,IdServeur,TypeAction : protocol_id,
+	    Action: text,
+	    PKb,PKs: public_key,
+	    H: hash_func,
+	    SND,RCV: channel(dy))
+played_by S def=
+
+  local State: nat,
+  ClefSession: symmetric_key
+  init State:=0
+
+  transition
+    
+    1.  State=0 /\ RCV({IdEmploye.IdBadgeuse}_PKs) =|>
+        State':=1 /\ ClefSession':=new() /\ secret(ClefSession', sessionkey,{B,S}) /\ SND({ClefSession.IdServeur}_PKb) /\secret(IdServeur,idserveur,{B,S}) /\ witness(S,B,serveur_badgeuse,IdEmploye.IdBadgeuse)
+
+    2.  State=1 /\ RCV({TypeAction}_ClefSession) =|>
+        State':=2 /\ SND({TypeAction.Action}_ClefSession) /\ secret(Action, act,{B,S})
+
+    3.  State=2 /\ RCV({ok.H(Action)}_ClefSession) =|>
+        State':=3 /\ request(S,B,serveur_badgeuse, IdEmploye.IdBadgeuse)
+end role
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% définition du rôle caractérisant une session
+role session(B, S: agent, PKs, PKb: public_key, IdEmploye,IdBadgeuse,IdServeur,TypeAction : protocol_id,H:hash_func,Action:text) def=
+
+  local SB, RB, SS, RS: channel(dy)
+
+  composition 
+
+	badgeuse(B,S,IdEmploye,IdBadgeuse,IdServeur,TypeAction,PKb,PKs,H,SB,RB)
+     /\ serveur(B,S,IdEmploye,IdBadgeuse,IdServeur,TypeAction,Action,PKs,PKb,H,SS,RS)
+
+end role
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% définition du rôle caractérisant le scenario à exécuter
+role environment() def=
+
+    const b,s : agent,
+	  pks, pkb, pki: public_key,
+          h:hash_func,
+          idemploye, idbadgeuse, badgeuse_serveur,typeaction, serveur_badgeuse,act,sessionkey,idserveur: protocol_id,
+          idemployei:protocol_id,
+          action :text,
+	  ok : nat
+    intruder_knowledge = {b, s, pkb, pks, pki, inv(pki),h,typeaction,idemployei}
+
+    composition
+
+	session(b,s,pks,pkb,idemploye, idbadgeuse,idserveur,typeaction,h,action)/\
+	session(b,i,pkb,pki,idemploye, idbadgeuse,idserveur,typeaction,h,action)/\
+	session(i,s,pki,pks,idemploye,idserveur, idbadgeuse,typeaction,h,action)/\
+	session(i,s,pki,pks,idemployei,idserveur, idbadgeuse,typeaction,h,action)
+
+
+
+
+end role
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+goal
+	secrecy_of sessionkey,act	
+	secrecy_of idemploye,idserveur
+	authentication_on badgeuse_serveur
+	authentication_on serveur_badgeuse
+end goal
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% lancement du rôle principal
+environment()
